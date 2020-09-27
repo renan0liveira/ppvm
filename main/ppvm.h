@@ -34,7 +34,7 @@ void write_byte(u16 addr, u8 byte);
 u16 read_word(u16 addr);
 void write_word(u16 addr, u16 word);
 
-void exec_instruction(u8 opcode);
+void exec_instruction(void);
 void exec_devices(void);
 void step(void);
 

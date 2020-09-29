@@ -1,8 +1,12 @@
 #ifndef _PPVM_H_
 #define _PPVM_H_
 
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
+
 #include "device.h"
+#include "macros.h"
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -34,8 +38,8 @@ void write_byte(u16 addr, u8 byte);
 u16 read_word(u16 addr);
 void write_word(u16 addr, u16 word);
 
-void exec_instruction(void);
+void exec_instruction(u8);
 void exec_devices(void);
-void step(void);
+bool step(void);
 
 #endif

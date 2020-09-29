@@ -1,35 +1,64 @@
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include "ppvm.h"
+#include "terminal.h"
 #include "printer.h"
-#include "test_device.h"
-
-void t_run(void* param)
-{
-	bool run = true;
-	while(1){
-		if(run){
-			step();
-			run = false;
-		}
-	}
-}
 
 void app_main(void)
 {
-	write_byte(0x0030, 0x5A);
-	write_byte(0x0031, 0x69);
-	write_byte(0x0032, 0x6B);
-	write_byte(0x0033, 0x61);
-	write_byte(0x0034, 0x00);
+	write_byte(0x0030, 'z');
+	write_byte(0x0031, 0);
 
-	write_byte(0x0100, 0x00);
-	write_word(0x0101, 0x0002);
+	write_byte(0x0100, 0x00);	// terminal flag
+	write_word(0x0101, 0x0003);
 	write_byte(0x0103, 0x11);
 
-	map_device(printer_device);
-	map_device(test_device);
+	write_byte(0x0104, 0x04);	// MOV "r\0", $0030
+	write_word(0x0105, 0x7200);
+	write_word(0x0107, 0x0030);
+
+	write_byte(0x0109, 0x00);	// terminal flag
+	write_word(0x010a, 0x0003);
+	write_byte(0x010c, 0x11);
+
+	write_byte(0x010d, 0x04);	// MOV "e\0", $0030
+	write_word(0x010e, 0x6500);
+	write_word(0x0110, 0x0030);
+
+	write_byte(0x0112, 0x00);	// terminal flag
+	write_word(0x0113, 0x0003);
+	write_byte(0x0115, 0x11);
+
+	write_byte(0x0116, 0x04);	// MOV "n\0", $0030
+	write_word(0x0117, 0x6e00);
+	write_word(0x0119, 0x0030);
+
+	write_byte(0x011b, 0x00);	// terminal flag
+	write_word(0x011c, 0x0003);
+	write_byte(0x011e, 0x11);
+
+	write_byte(0x011f, 0x04);	// MOV "a\0", $0030
+	write_word(0x0120, 0x6100);
+	write_word(0x0122, 0x0030);
+
+	write_byte(0x0124, 0x00);	// terminal flag
+	write_word(0x0125, 0x0003);
+	write_byte(0x0127, 0x11);
+
+	write_byte(0x0128, 0xfa);
+
+	write_byte(0x0129, 0x04);	// MOV "n\0", $0030
+	write_word(0x012a, 0x6e00);
+	write_word(0x012c, 0x0030);
+
+	write_byte(0x012e, 0x00);	// terminal flag
+	write_word(0x012f, 0x0003);
+	write_byte(0x0131, 0x11);
+
+//	write_word(0x0);
+//	write_byte(0x0);
+
+	map_device(terminal_device);
+//	map_device(printer_device);
 	init_ppvm();
-	xTaskCreate(t_run, "t_run", 2048, NULL, 0, NULL);
+
+	while(!step());
 }

@@ -1,9 +1,6 @@
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "ppvm.h"
-#include "macros.h"
 
 static Memory mem;
 static u16 reserved_memory_bound = 0x0030;
@@ -55,9 +52,8 @@ void write_word(u16 addr, u16 word)
 	mem.ram[addr] = word >> 8;
 	mem.ram[addr + 1] = word;
 }
-void exec_instruction()
+void exec_instruction(u8 opcode)
 {
-	u8 opcode = read_byte(mem.PC++);
 	u8 i_op = 0;
 	#define a(ms4bytes, ops1) if (((opcode >> 4)|0) == ms4bytes) { ops1 } else
 	#define b(ls4bytes, ops2) if ((opcode & 0x0f) == ls4bytes) { ops2 return;} else
@@ -78,9 +74,14 @@ void exec_devices()
 	}
 }
 
-void step()
+bool step()
 {
-	exec_instruction();
+	u8 curr_op = read_byte(mem.PC++);
+	if (curr_op == 0xff) { return true; }
+
+	exec_instruction(curr_op);
 	exec_devices();
+
+	return false;
 //	printf("%#06x\n", mem.DIR);
 }

@@ -1,64 +1,72 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+
+#include "esp_err.h"
+#include "esp_log.h"
+#include "esp_spiffs.h"
+
 #include "ppvm.h"
 #include "terminal.h"
 #include "printer.h"
 
+static const char *TAG = "example";
+
+static esp_vfs_spiffs_conf_t conf = {
+		.base_path = "/spiffs",
+		.partition_label = NULL,
+		.max_files = 5,
+		.format_if_mount_failed = true
+};
+
+bool init_fs()
+{
+	esp_err_t ret = esp_vfs_spiffs_register(&conf);
+	if (ret != ESP_OK) {
+		ESP_LOGE(TAG, "Failed to mount or format filesystem");
+		return false;
+	}
+	return true;
+}
+
+bool read_code()
+{
+	ESP_LOGI(TAG, "Opening file");
+	FILE* f = fopen("/spiffs/program.ppc", "r");
+	if (f == NULL) {
+		ESP_LOGE(TAG, "Failed to open code file");
+		return false;
+	}
+	fgets((char*)mem.ram, sizeof(mem.ram), f);
+	fclose(f);
+	esp_vfs_spiffs_unregister(conf.partition_label);
+	ESP_LOGI(TAG, "SPIFFS unmounted");
+
+	return true;
+}
+
 void app_main(void)
 {
-	write_byte(0x0030, 'z');
-	write_byte(0x0031, 0);
+	if (!init_fs() || !read_code()) {
+		mem.PC = 0x0100;
+		mem.DIR = 0x0003;
 
-	write_byte(0x0100, 0x00);	// terminal flag
-	write_word(0x0101, 0x0003);
-	write_byte(0x0103, 0x11);
+		mem.ram[0x0030] = 'n';
+		mem.ram[0x0031] = 'o';
+		mem.ram[0x0032] = ' ';
+		mem.ram[0x0033] = 'c';
+		mem.ram[0x0034] = 'o';
+		mem.ram[0x0035] = 'd';
+		mem.ram[0x0036] = 'e';
 
-	write_byte(0x0104, 0x04);	// MOV "r\0", $0030
-	write_word(0x0105, 0x7200);
-	write_word(0x0107, 0x0030);
+		mem.ram[0x0100] = 0xfa;
+		mem.ram[0x0101] = 0xff;
 
-	write_byte(0x0109, 0x00);	// terminal flag
-	write_word(0x010a, 0x0003);
-	write_byte(0x010c, 0x11);
-
-	write_byte(0x010d, 0x04);	// MOV "e\0", $0030
-	write_word(0x010e, 0x6500);
-	write_word(0x0110, 0x0030);
-
-	write_byte(0x0112, 0x00);	// terminal flag
-	write_word(0x0113, 0x0003);
-	write_byte(0x0115, 0x11);
-
-	write_byte(0x0116, 0x04);	// MOV "n\0", $0030
-	write_word(0x0117, 0x6e00);
-	write_word(0x0119, 0x0030);
-
-	write_byte(0x011b, 0x00);	// terminal flag
-	write_word(0x011c, 0x0003);
-	write_byte(0x011e, 0x11);
-
-	write_byte(0x011f, 0x04);	// MOV "a\0", $0030
-	write_word(0x0120, 0x6100);
-	write_word(0x0122, 0x0030);
-
-	write_byte(0x0124, 0x00);	// terminal flag
-	write_word(0x0125, 0x0003);
-	write_byte(0x0127, 0x11);
-
-	write_byte(0x0128, 0xfa);
-
-	write_byte(0x0129, 0x04);	// MOV "n\0", $0030
-	write_word(0x012a, 0x6e00);
-	write_word(0x012c, 0x0030);
-
-	write_byte(0x012e, 0x00);	// terminal flag
-	write_word(0x012f, 0x0003);
-	write_byte(0x0131, 0x11);
-
-//	write_word(0x0);
-//	write_byte(0x0);
+		ESP_LOGE(TAG, "ERROR");
+	}
 
 	map_device(terminal_device);
-//	map_device(printer_device);
-	init_ppvm();
-
 	while(!step());
 }

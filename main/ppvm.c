@@ -2,16 +2,11 @@
 
 #include "ppvm.h"
 
-static Memory mem;
 static u16 reserved_memory_bound = 0x0030;
 
 static device_map_t* device_map = NULL;
 static u8 total_mask_size = 0;
 
-void init_ppvm(void)
-{
-	mem.PC = 0x0100;
-}
 void map_device(device_t device)
 {
 	device.map_fn(mem.ram + reserved_memory_bound);
@@ -36,23 +31,23 @@ void map_device(device_t device)
 	total_mask_size += device.mask_size;
 }
 
-u8 read_byte(u16 addr){
+static u8 read_byte(u16 addr){
 	return mem.ram[addr];
 }
-void write_byte(u16 addr, u8 byte)
-{
-	mem.ram[addr] = byte;
-}
-u16 read_word(u16 addr)
+//static void write_byte(u16 addr, u8 byte)
+//{
+//	mem.ram[addr] = byte;
+//}
+static u16 read_word(u16 addr)
 {
 	return (mem.ram[addr] * 0x100) + mem.ram[addr + 1];
 }
-void write_word(u16 addr, u16 word)
+static void write_word(u16 addr, u16 word)
 {
 	mem.ram[addr] = word >> 8;
 	mem.ram[addr + 1] = word;
 }
-void exec_instruction(u8 opcode)
+static void exec_instruction(u8 opcode)
 {
 	u8 i_op = 0;
 	#define a(ms4bytes, ops1) if (((opcode >> 4)|0) == ms4bytes) { ops1 } else
@@ -61,7 +56,7 @@ void exec_instruction(u8 opcode)
 	#undef b
 	#undef a
 }
-void exec_devices()
+static void exec_devices()
 {
 	device_map_t* curr_device = device_map;
 	u16 mask;

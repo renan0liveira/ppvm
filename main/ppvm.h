@@ -1,9 +1,9 @@
 #ifndef _PPVM_H_
 #define _PPVM_H_
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "device.h"
 #include "macros.h"
@@ -17,6 +17,7 @@ typedef struct dmt_{
 	struct dmt_* next;
 } device_map_t;
 
+// PC deve começar com 0x0100
 typedef union {
 	struct
 	{
@@ -30,16 +31,8 @@ typedef union {
 	u8 ram[65536];
 } Memory;
 
-void init_ppvm(void);
+Memory mem;
 void map_device(device_t);
-
-u8 read_byte(u16 addr);
-void write_byte(u16 addr, u8 byte);
-u16 read_word(u16 addr);
-void write_word(u16 addr, u16 word);
-
-void exec_instruction(u8);
-void exec_devices(void);
 bool step(void);
 
 #endif

@@ -39,7 +39,7 @@ bool read_code()
 		ESP_LOGE(TAG, "Failed to open code file");
 		return false;
 	}
-	fgets((char*)mem.ram, sizeof(mem.ram), f);
+	fgets((char*)mem, sizeof(mem), f);
 	fclose(f);
 	esp_vfs_spiffs_unregister(conf.partition_label);
 	ESP_LOGI(TAG, "SPIFFS unmounted");
@@ -50,23 +50,25 @@ bool read_code()
 void app_main(void)
 {
 	if (!init_fs() || !read_code()) {
-		mem.PC = 0x0100;
-		mem.DIR = 0x0003;
+		regs.PC = 0x0100;
+		regs.DIR = 0x0003;
 
-		mem.ram[0x0030] = 'n';
-		mem.ram[0x0031] = 'o';
-		mem.ram[0x0032] = ' ';
-		mem.ram[0x0033] = 'c';
-		mem.ram[0x0034] = 'o';
-		mem.ram[0x0035] = 'd';
-		mem.ram[0x0036] = 'e';
+		mem[0x0000] = 'n';
+		mem[0x0001] = 'o';
+		mem[0x0002] = ' ';
+		mem[0x0003] = 'c';
+		mem[0x0004] = 'o';
+		mem[0x0005] = 'd';
+		mem[0x0006] = 'e';
 
-		mem.ram[0x0100] = 0xfa;
-		mem.ram[0x0101] = 0xff;
+		mem[0x0100] = 0xfa;
+		mem[0x0101] = 0xff;
 
 		ESP_LOGE(TAG, "ERROR");
 	}
 
 	map_device(terminal_device);
+
+	init_vm();
 	while(!step());
 }

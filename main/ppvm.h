@@ -25,13 +25,14 @@ typedef union {
 		u16 ACC;
 		u16 DIR;
 		u16 PC;
-		u16 OP[2];
 	};
 	u16 R[18];
-	u8 ram[65536];
-} Memory;
+} Registers;
 
-Memory mem;
+u8 mem[65536];
+Registers regs;
+
+void init_vm(void);
 void map_device(device_t);
 bool step(void);
 

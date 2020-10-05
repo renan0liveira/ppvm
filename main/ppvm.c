@@ -2,14 +2,18 @@
 
 #include "ppvm.h"
 
-static u16 reserved_memory_bound = 0x0030;
+static u16 OP[2];
 
+static u16 reserved_memory_bound = 0;
 static device_map_t* device_map = NULL;
 static u8 total_mask_size = 0;
 
+void init_vm()
+{ regs.PC = 0x0100; }
+
 void map_device(device_t device)
 {
-	device.map_fn(mem.ram + reserved_memory_bound);
+	device.map_fn(mem + reserved_memory_bound);
 	reserved_memory_bound += device.size;
 
 	device_map_t* new_device = (device_map_t *)malloc(sizeof(device_map_t));
@@ -32,7 +36,7 @@ void map_device(device_t device)
 }
 
 static u8 read_byte(u16 addr){
-	return mem.ram[addr];
+	return mem[addr];
 }
 //static void write_byte(u16 addr, u8 byte)
 //{
@@ -40,12 +44,12 @@ static u8 read_byte(u16 addr){
 //}
 static u16 read_word(u16 addr)
 {
-	return (mem.ram[addr] * 0x100) + mem.ram[addr + 1];
+	return (mem[addr] * 0x100) + mem[addr + 1];
 }
 static void write_word(u16 addr, u16 word)
 {
-	mem.ram[addr] = word >> 8;
-	mem.ram[addr + 1] = word;
+	mem[addr] = word >> 8;
+	mem[addr + 1] = word;
 }
 static void exec_instruction(u8 opcode)
 {
@@ -60,18 +64,18 @@ static void exec_devices()
 {
 	device_map_t* curr_device = device_map;
 	u16 mask;
-	while (mem.DIR > 0 && curr_device != NULL) {
-		mask = mem.DIR & ~(0xFFFF << curr_device->mask_size);
+	while (regs.DIR > 0 && curr_device != NULL) {
+		mask = regs.DIR & ~(0xFFFF << curr_device->mask_size);
 		if (mask) { curr_device->exec_fn(mask); }
 
-		mem.DIR >>= curr_device->mask_size;
+		regs.DIR >>= curr_device->mask_size;
 		curr_device = curr_device->next;
 	}
 }
 
 bool step()
 {
-	u8 curr_op = read_byte(mem.PC++);
+	u8 curr_op = read_byte(regs.PC++);
 	if (curr_op == 0xff) { return true; }
 
 	exec_instruction(curr_op);

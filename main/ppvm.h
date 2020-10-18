@@ -17,7 +17,6 @@ typedef struct dmt_{
 	struct dmt_* next;
 } device_map_t;
 
-// PC deve começar com 0x0100
 typedef union {
 	struct
 	{

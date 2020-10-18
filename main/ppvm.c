@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "ppvm.h"
 
 static u16 OP[2];
@@ -38,10 +36,6 @@ void map_device(device_t device)
 static u8 read_byte(u16 addr){
 	return mem[addr];
 }
-//static void write_byte(u16 addr, u8 byte)
-//{
-//	mem.ram[addr] = byte;
-//}
 static u16 read_word(u16 addr)
 {
 	return (mem[addr] * 0x100) + mem[addr + 1];
@@ -82,5 +76,4 @@ bool step()
 	exec_devices();
 
 	return false;
-//	printf("%#06x\n", mem.DIR);
 }

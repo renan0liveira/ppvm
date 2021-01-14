@@ -34,7 +34,7 @@ bool init_fs()
 bool read_code()
 {
 	ESP_LOGI(TAG, "Opening file");
-	FILE* f = fopen("/spiffs/program.ppc", "r");
+	FILE* f = fopen("/spiffs/program", "r");
 	if (f == NULL) {
 		ESP_LOGE(TAG, "Failed to open code file");
 		return false;
